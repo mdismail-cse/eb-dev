@@ -299,28 +299,14 @@ Aliases: `@essential-blocks/controls` → externalized to `window.EBControls`.
 
 ## 8. Hooks and extensibility
 
-See `hooks-reference.md` for the comprehensive list. Highlights:
+**See `hooks-reference.md` for the complete list with line numbers.**
 
-**Actions:**
-- `essential_blocks::init` — after all free services are up (pro hooks here)
-- `eb_after_save_all_settings` / `eb_after_save_{$key}_settings`
-- `eb_after_reset_{$key}_settings`
-- `eb_frontend_assets` — after frontend assets are generated
-- `eb_form_submit_before_email` / `eb_form_submit_after_email`
-- `eb_form_block_integrations`
-
-**Filters:**
-- `essential_blocks_block_lists` — modify the block registry
-- `essential_blocks_block_path` — override block asset paths
-- `eb_frontend_styles/{$blockname}` — add/remove frontend styles per block
-- `eb_frontend_scripts/{$blockname}` — add/remove frontend scripts per block
-- `eb_generated_css_frontend_deps` — CSS deps
-- `eb_post_grid_query_results` — modify post-grid queried posts
-- `eb_post_carousel_query_results` — same for carousel
-- `eb_form_data_validation` — custom form validation
-- `eb_dynamic_tag_value` — resolve dynamic tag values
-- `eb_conditional_display_results` — conditional block display
-- `eb_form_submit_btn_attr` / `eb_form_submit_btn_classes`
+Quick recall — the 5 most important hooks:
+- `essential_blocks::init` (`Plugin.php:168`) — pro boots here
+- `essential_blocks_block_lists` (`Blocks.php:63`) — modify block registry
+- `eb_frontend_styles/{$blockname}` (`Block.php:120`) — per-block CSS
+- `eb_post_grid_query_results` (`PostGrid.php:129`) — modify query
+- `eb_dynamic_tag_value` (`Form.php:492`) — resolve dynamic tags
 
 ## 9. Patterns, templates, views
 

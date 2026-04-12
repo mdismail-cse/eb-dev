@@ -12,9 +12,9 @@ to confirm current positions.
 
 ### Plugin lifecycle
 
-| Hook                                    | Fired from                      | When                                                         |
-|-----------------------------------------|---------------------------------|--------------------------------------------------------------|
-| `essential_blocks::init`                | `includes/Plugin.php`           | End of `Plugin::__construct()` — pro hooks here              |
+| Hook                                    | Fired from                      | Line | When                                                    |
+|-----------------------------------------|---------------------------------|------|---------------------------------------------------------|
+| `essential_blocks::init`                | `includes/Plugin.php`           | 168  | End of `Plugin::__construct()` — pro hooks here         |
 
 This is the primary extension point for the pro plugin. Pro listens to it to
 register its own blocks, REST routes, and integrations.
@@ -23,11 +23,11 @@ register its own blocks, REST routes, and integrations.
 
 All fired from `includes/Utils/Settings.php`:
 
-| Hook                                    | When                                                                         |
-|-----------------------------------------|------------------------------------------------------------------------------|
-| `eb_after_save_all_settings`            | After the full settings array is persisted                                    |
-| `eb_after_save_{$key}_settings`         | After an individual settings key is saved (e.g., `eb_after_save_blocks_settings`) |
-| `eb_after_reset_{$key}_settings`        | After an individual settings key is reset to default                          |
+| Hook                                    | Line | When                                                                    |
+|-----------------------------------------|------|-------------------------------------------------------------------------|
+| `eb_after_save_all_settings`            | 39   | After the full settings array is persisted                               |
+| `eb_after_save_{$key}_settings`         | 59   | After an individual settings key is saved                               |
+| `eb_after_reset_{$key}_settings`        | 83   | After an individual settings key is reset to default                    |
 
 These are the place to invalidate caches or rebuild indices when admin
 settings change.
@@ -64,19 +64,19 @@ All fired from `includes/Integrations/Form.php`:
 
 ### Block registry
 
-| Filter                                                       | Fired from                      | Default value          | Used to…                                                   |
-|--------------------------------------------------------------|---------------------------------|------------------------|------------------------------------------------------------|
-| `essential_blocks_block_lists`                              | `includes/Core/Blocks.php`      | block manifest array  | Add/remove blocks from the registry (pro appends blocks)   |
-| `essential_blocks_block_path`                                | `includes/Core/Block.php`       | block file path       | Override where a block's compiled assets live              |
+| Filter                                                       | Fired from                      | Line | Default value          | Used to…                                                   |
+|--------------------------------------------------------------|---------------------------------|------|------------------------|------------------------------------------------------------|
+| `essential_blocks_block_lists`                              | `includes/Core/Blocks.php`      | 63   | block manifest array  | Add/remove blocks from the registry (pro appends blocks)   |
+| `essential_blocks_block_path`                                | `includes/Core/Block.php`       | 66   | block file path       | Override where a block's compiled assets live              |
 
 ### Per-block frontend assets
 
-| Filter                                           | Default value       | Used to…                                             |
-|--------------------------------------------------|---------------------|------------------------------------------------------|
-| `eb_frontend_styles/{$blockname}`                | `$frontend_styles`  | Add/remove frontend CSS handles for a specific block |
-| `eb_frontend_scripts/{$blockname}`               | `$frontend_scripts` | Add/remove frontend JS handles for a specific block  |
-| `eb_fixed_frontend_styles/{$blockname}`          | CSS string          | Modify fixed CSS injected per-block                  |
-| `eb_generated_css_frontend_deps`                 | deps array          | Add CSS file dependencies                            |
+| Filter                                           | File:Line                          | Default value       | Used to…                                             |
+|--------------------------------------------------|------------------------------------|---------------------|------------------------------------------------------|
+| `eb_frontend_styles/{$blockname}`                | `Core/Block.php:120`               | `$frontend_styles`  | Add/remove frontend CSS handles for a specific block |
+| `eb_frontend_scripts/{$blockname}`               | `Core/Block.php:121`               | `$frontend_scripts` | Add/remove frontend JS handles for a specific block  |
+| `eb_fixed_frontend_styles/{$blockname}`          | `Modules/StyleHandler.php:297`     | CSS string          | Modify fixed CSS injected per-block                  |
+| `eb_generated_css_frontend_deps`                 | `Modules/StyleHandler.php:103`     | deps array          | Add CSS file dependencies                            |
 
 `{$blockname}` is the dashed block name without the `essential-blocks/`
 prefix, e.g., `eb_frontend_styles/post-grid`. These are the cleanest way to
@@ -84,25 +84,26 @@ extend a block's asset list without editing the block class.
 
 ### Query result modification
 
-| Filter                                | Fired from                                | Default value    | Used to…                              |
-|---------------------------------------|-------------------------------------------|------------------|---------------------------------------|
-| `eb_post_grid_query_results`          | `includes/Blocks/PostGrid.php`            | WP_Query posts   | Modify queried posts before render    |
-| `eb_post_carousel_query_results`      | `includes/Blocks/PostCarousel.php`        | WP_Query posts   | Same, for carousel                    |
+| Filter                                | Fired from                                | Line | Default value    | Used to…                           |
+|---------------------------------------|-------------------------------------------|------|------------------|------------------------------------|
+| `eb_post_grid_query_results`          | `includes/Blocks/PostGrid.php`            | 129  | WP_Query posts   | Modify queried posts before render |
+| `eb_post_carousel_query_results`      | `includes/Blocks/PostCarousel.php`        | 114  | WP_Query posts   | Same, for carousel                 |
 
 Use these to filter posts by custom logic (hide expired, inject promoted
 posts, reorder by weight) without monkey-patching the block class.
 
 ### Form block customization
 
-All in `includes/Integrations/Form.php`:
+All in `includes/Integrations/Form.php` except where noted:
 
-| Filter                                | Default value              | Used to…                                                    |
-|---------------------------------------|----------------------------|-------------------------------------------------------------|
-| `eb_form_before_validation`           | form fields array          | Modify submitted fields before validation                   |
-| `eb_form_data_validation`             | validation result (bool)   | Custom validation rules                                      |
-| `eb_form_submit_btn_attr`             | attributes array           | Customize submit button attributes (data-*, target, etc.)   |
-| `eb_form_submit_btn_classes`          | classes string             | Modify submit button CSS classes                             |
-| `eb_dynamic_tag_value`                | resolved value             | Resolve dynamic tag values (post meta, custom fields)       |
+| Filter                                | Line                | Default value              | Used to…                                                    |
+|---------------------------------------|---------------------|----------------------------|-------------------------------------------------------------|
+| `eb_form_before_validation`           | `Form.php:56`       | form fields array          | Modify submitted fields before validation                   |
+| `eb_form_data_validation`             | `Form.php:485`      | validation result (bool)   | Custom validation rules                                      |
+| `eb_form_submit_btn_attr`             | `Form.php:114`      | attributes array           | Customize submit button attributes (data-*, target, etc.)   |
+| `eb_form_submit_btn_classes`          | `Form.php:119`      | classes string             | Modify submit button CSS classes                             |
+| `eb_form_confirmation_div_attr`       | `Form.php:139`      | attributes array           | Customize confirmation message div attributes               |
+| `eb_dynamic_tag_value`                | `Form.php:492` + `TableOfContents.php:237` | resolved value | Resolve dynamic tag values (post meta, custom fields)   |
 
 ### Conditional display
 

@@ -161,6 +161,10 @@ reference file:
 | The **controls API** — list of 37 controls, how to add one, responsive patterns | `references/controls-api.md`                 |
 | A specific free block                             | `references/blocks-inventory.md` → then `src/blocks/<name>/`   |
 | `do_action`, `apply_filters`, extensibility      | `references/hooks-reference.md`                                |
+| **CSS not applying**, StyleHandler, `blockMeta`, attribute→CSS flow | `references/css-pipeline.md`                   |
+| Block `deprecated` migrations, "unexpected content" errors | `references/css-pipeline.md` (bottom section)          |
+| **Common bug patterns** — recurring fix types, diagnosis shortcuts | `references/common-bugs.md`                    |
+| **What changed in version X** — per-release changelog | `references/release-history.md`                           |
 | Building, webpack, npm scripts, dist output      | `references/build-and-dev.md`                                  |
 | Branching, PRs, releases, "which dev owns X"     | `references/git-workflow.md`                                   |
 | Commit history, hotspots, historical trends      | `references/commit-insights.md`                                |
