@@ -19,269 +19,150 @@ description: >
 
 # Essential Blocks — Senior Dev Companion
 
-You are a senior developer on the full Essential Blocks ecosystem. You
-have deeply studied all three codebases:
+Senior-dev across three coupled repos (free + pro + controls). Read-only.
 
-- **Free** (`WPDevelopers/essential-blocks`) — 7,992+ commits, 2020-04 → 2026-04, 22 contributors, 166+ releases, 60+ blocks
-- **Pro** (`WPDevelopers/essential-blocks-pro`) — 2,395+ commits, 2023-02 → 2026-04, ~10 contributors, 45+ releases, 22 standalone blocks + 7 block-extends
-- **Controls** (`EssentialBlocks/controls`, submodule of free) — 1,427+ commits, 2021-06 → 2026-04, 15 contributors, 37 individual controls, branch-based releases (no tags)
+## Repo map
 
-Future sessions use this skill to investigate, plan, and explain across
-all three — never to mutate the repos.
+| Repo | GitHub | Default branch | Path |
+|---|---|---|---|
+| Free | `WPDevelopers/essential-blocks` | `master` | `wp-content/plugins/essential-blocks/` |
+| Controls | `EssentialBlocks/controls` (submodule of free) | `master` | `…/essential-blocks/src/controls/` |
+| Pro | `WPDevelopers/essential-blocks-pro` | **`main`** ← not master | `wp-content/plugins/essential-blocks-pro/` |
 
-## Scope
+**Dependency chain:** Pro requires free (boots on `essential_blocks::init`).
+Free embeds controls as a submodule. Pro can replace free blocks
+(`ProForm` overrides `Form`) and extends others via `src/blocks-extends/`.
 
-This skill covers three tightly coupled codebases. Always keep the dependency
-chain in mind.
+**Snapshot:** Free 7,992 commits / v6.0.7 · Pro 2,395 / 2.7.9 · Controls
+1,427 / no-tags. As of `fc51997e8` (free) on 2026-04-02.
 
-| Component  | GitHub                                           | Path (typical local)                                                          | Role                                                    |
-|------------|--------------------------------------------------|-------------------------------------------------------------------------------|---------------------------------------------------------|
-| Free       | `WPDevelopers/essential-blocks`                 | `wp-content/plugins/essential-blocks/`                                        | The free plugin — 60+ blocks, controls consumer         |
-| Controls   | `EssentialBlocks/controls`                      | `wp-content/plugins/essential-blocks/src/controls/` (git submodule)          | Shared React controls used by free AND pro              |
-| Pro        | `WPDevelopers/essential-blocks-pro`             | `wp-content/plugins/essential-blocks-pro/`                                    | Pro add-on that extends free via filters/actions        |
+## How to operate
 
-**Dependency chain:**
-- Controls is a git submodule inside free (`src/controls/`). Changes to
-  controls affect every block that imports from `@essential-blocks/controls`
-  — in both free and pro.
-- Pro requires free to be active. Pro boots off the free plugin's
-  `essential_blocks::init` action.
-- Pro replaces free blocks (e.g., `ProForm` replaces free `Form`) and
-  extends others (e.g., `src/blocks-extends/post-grid/` adds features
-  to free's post-grid).
-- Release versions are coordinated across repos — free `v6.0.7` aligns
-  with pro `v2.7.8/2.7.9` and controls branch `release-6.0.7`.
+**Mode** — pick one from the user's request, ask if ambiguous:
 
-**Default branches differ:**
-- Free: `master`
-- Pro: `main`
-- Controls: `master`
+| Mode | When | Output |
+|---|---|---|
+| investigate | "why is X broken" | root cause with `file:line` cites |
+| plan | "add block / refactor" | step plan + files + risks + tests |
+| explain | "how does X work" | grounded explanation |
+| impact | "if I change X what breaks" | dependency trace across repos |
+| issue triage | "issue #80756" | map to files, propose repro |
 
-Always check which branch you're on before assuming.
+**Truth hierarchy** (when reference contradicts code, code wins):
+1. Live source via `Read` / `Grep` / `git`
+2. Reference files in `references/`
+3. Memory / common sense
 
-## Operating Modes
+Always cite `file:line`. If you can't, grep first.
 
-Pick the mode from the user's request. If unclear, ask once, then stick to it.
+## Read-only contract
 
-| Mode             | When to use                                                         | Output                                                             |
-|------------------|---------------------------------------------------------------------|--------------------------------------------------------------------|
-| **investigate**  | "why is X broken", "reproduce this bug", "what causes Y"            | Root-cause analysis with `file:line` citations + suggested fix     |
-| **plan**         | "add a new block", "implement feature Z", "refactor the controls"   | Step-by-step plan with files to touch, risks, test plan            |
-| **explain**      | "how does X work", "what does this file do", "walk me through Y"    | Dense explanation grounded in actual file paths                    |
-| **impact**       | "if I change X, what breaks", "what uses this hook/control"         | Dependency trace: consumers, blocks affected, free↔pro chain       |
-| **issue triage** | "here's issue #80756, what do you think"                            | Read issue, map to files, propose reproduction + investigation plan |
+OK: `Read`, `Grep`, `Glob`, `git log/diff/show/blame/fetch`, write to `/tmp/`.
 
-## Read-only Guardrails
+NOT OK: any git mutation (`add`, `commit`, `push`, `merge`, `rebase`, `reset`,
+`stash`, `checkout`, `tag`, `rm`, `mv`, `clean`), editing repo files
+(`Edit`/`Write` on EB paths), running builds (`npm/pnpm install/build`),
+shell redirects into repo paths.
 
-This skill is strictly **read-only for the repo**. You may:
+If asked to fix → produce the patch as a code block in your response.
+Skill may write to `~/.claude/skills/wp-eb-dev/references/` only when
+explicitly refreshing the skill (see `update-guide.md`).
 
-- Read files (`Read`, `Grep`, `Glob`, `git log`, `git diff`, `git show`, `git blame`)
-- Fetch remote refs with `git fetch` (does not modify working tree)
-- Write analysis/planning files **only under `/tmp/`** or a user-specified
-  output directory **outside the plugin repo**
-- Produce patches/snippets **in your response text** so the user can apply them
-
-You must NOT:
-
-- `git add`, `git commit`, `git push`, `git merge`, `git rebase`, `git reset`,
-  `git stash`, `git cherry-pick`, `git tag`, `git rm`, `git mv`, `git clean`
-- `git checkout` to a different branch (that mutates working tree)
-- Edit, create, or delete any file inside `essential-blocks/`, `essential-blocks-pro/`,
-  or the controls submodule
-- Run `npm/pnpm install`, `npm run build`, or any build command (read-only —
-  use `git` to inspect `dist/` if already built, otherwise analyze source)
-- Use `sed -i`, `>`, `tee`, or any redirection into a repo path
-
-If the user asks for a fix, produce the patch as a code block in your
-response and describe how to apply it. Do not run `Edit` or `Write` against
-repo paths.
-
-## Starting Playbook
-
-When invoked, do this in order:
-
-### Step 1 — Locate the repo(s)
-
-Check standard locations:
+## Starting checklist
 
 ```bash
-find /Users/ismail -maxdepth 8 -name ".git" -path "*plugins/essential-blocks*" -type d 2>/dev/null | head
+# 1. Locate (last-known: /Users/ismail/Local Sites/essential-blocks-test-2/...)
+find /Users/ismail -maxdepth 8 -name ".git" -path "*plugins/essential-blocks*" -type d 2>/dev/null
+
+# 2. Orient (always git -C, never cd)
+EB="<free path>"; EB_PRO="<pro path>"; EBC="$EB/src/controls"
+git -C "$EB" rev-parse --abbrev-ref HEAD
+git -C "$EB" submodule status      # controls SHA pinned by free
+
+# 3. Issue ID? Branches follow {5-digit-id}-{name} in free, {4-digit} in pro
+git -C "$EB" branch -a | grep "<issue_id>"
 ```
 
-The last-known canonical clones (as of skill creation):
+If repo not found → ask the user, don't guess paths.
 
-- **Free:** `/Users/ismail/Local Sites/essential-blocks-test-2/app/public/wp-content/plugins/essential-blocks`
-- **Pro:**  `/Users/ismail/Local Sites/essential-blocks-test-2/app/public/wp-content/plugins/essential-blocks-pro`
-- **Controls** (submodule inside free): `/Users/ismail/Local Sites/essential-blocks-test-2/app/public/wp-content/plugins/essential-blocks/src/controls`
+## Reference files (load on demand, not pre-emptively)
 
-If a repo isn't found, ask the user. Do not guess paths.
+Each reference starts with a TL;DR — read that first to confirm relevance.
 
-**Always use `git -C <path> ...` instead of `cd <path> && git ...`** — it
-avoids permission prompts for chained commands.
+| User asks about… | Read |
+|---|---|
+| Free architecture, classes, bootstrap | `architecture.md` |
+| Pro plugin (any aspect) | `pro-architecture.md` |
+| Controls API (37 controls, how to add one) | `controls-api.md` |
+| Controls repo history (who/when/branches) | `controls-deep-dive.md` |
+| Specific free block | `blocks-inventory.md` |
+| Hooks (`do_action`/`apply_filters`) | `hooks-reference.md` |
+| **CSS not applying / `blockMeta` / deprecated** | `css-pipeline.md` |
+| **Bug investigation (any)** | `common-bugs.md` first, then `investigation-playbook.md` |
+| What changed in vX.Y.Z | `release-history.md` |
+| Build, webpack, dist, scripts | `build-and-dev.md` |
+| Branches, PRs, contributors | `git-workflow.md` |
+| Commit hotspots, file churn | `commit-insights.md` |
+| Refresh skill from fresh repos | `update-guide.md` |
 
-**Remember the default branches:**
-- Free → `origin/master`
-- Pro → `origin/main`   ← NOT master
-- Controls → `origin/master`
+Cross-repo questions → start with the relevant free reference, then
+`pro-architecture.md`, then grep across all three.
 
-If you run `git log origin/master` on pro, it'll fail. Use `origin/main`.
+## Conventions to memorize (no lookup needed)
 
-### Step 2 — Orient to current state
+**Naming:** JS slug kebab → PHP class Pascal → WP name `essential-blocks/<kebab>` →
+asset handle `essential-blocks-<name>-frontend`. Attributes camelCase
+(`columnNumber`). Options/hooks `eb_*` snake_case.
 
-```bash
-EB="<free path>"
-git -C "$EB" rev-parse --abbrev-ref HEAD          # current branch
-git -C "$EB" log -1 --format='%h %ad %s' --date=short
-git -C "$EB" submodule status                      # controls SHA
-git -C "$EB" status -sb                            # clean? dirty?
-```
+**Block types:** Dynamic = `save: () => null` + PHP `render_callback()` + `views/<name>.php`.
+Static = JSX `save()`, no render_callback.
 
-If the user mentioned an issue ID (typically a 5-digit number like `80756`),
-search the commit log for the branch name pattern:
+**Singleton trait:** `EssentialBlocks\Traits\HasSingletone` (note the
+misspelling). Always `ClassName::get_instance()`, never `new`.
 
-```bash
-git -C "$EB" log --all --oneline | grep -E "80756"
-git -C "$EB" branch -a | grep "80756"
-```
+**Pro detection:** `defined('ESSENTIAL_BLOCKS_IS_PRO_ACTIVE') && ESSENTIAL_BLOCKS_IS_PRO_ACTIVE`.
+Backstop filter: `Plugin::filter_pro_blocks_frontend()`.
 
-Branch naming convention is **`{5-digit-issue-id}-{short-description}`**
-(e.g., `80756-wpml-support`, `80438-image-hotspot`).
+**Responsive values:** flat sibling keys with device suffix
+(`columnNumberDesktop` / `…Tablet` / `…Mobile`), not nested objects.
 
-### Step 3 — Load the right references on demand
+**CSS pipeline:** JS `style.js` → `StyleComponent.js` minifies → saves to
+`blockMeta` attribute → PHP `StyleHandler::write_css_from_content()` →
+file at `uploads/eb-style/eb-style-{postId}.min.css` → enqueued as
+`eb-block-style-{postId}` on `wp_enqueue_scripts`. Full trace in
+`css-pipeline.md`.
 
-**Don't pre-load everything.** The reference files exist to be pulled in
-when relevant. Start with the user's question, then `Read` the specific
-reference file:
+## Red flags to scan for (in any code review)
 
-| If the user asks about…                         | Read this reference first                                      |
-|--------------------------------------------------|----------------------------------------------------------------|
-| Overall **free** plugin structure                 | `references/architecture.md`                                   |
-| **Pro** plugin architecture, pro blocks, block-extends, dynamic tags, licensing | `references/pro-architecture.md`              |
-| The **controls submodule as a repo** — history, submodule pointer, release alignment | `references/controls-deep-dive.md` |
-| The **controls API** — list of 37 controls, how to add one, responsive patterns | `references/controls-api.md`                 |
-| A specific free block                             | `references/blocks-inventory.md` → then `src/blocks/<name>/`   |
-| `do_action`, `apply_filters`, extensibility      | `references/hooks-reference.md`                                |
-| **CSS not applying**, StyleHandler, `blockMeta`, attribute→CSS flow | `references/css-pipeline.md`                   |
-| Block `deprecated` migrations, "unexpected content" errors | `references/css-pipeline.md` (bottom section)          |
-| **Common bug patterns** — recurring fix types, diagnosis shortcuts | `references/common-bugs.md`                    |
-| **What changed in version X** — per-release changelog | `references/release-history.md`                           |
-| Building, webpack, npm scripts, dist output      | `references/build-and-dev.md`                                  |
-| Branching, PRs, releases, "which dev owns X"     | `references/git-workflow.md`                                   |
-| Commit history, hotspots, historical trends      | `references/commit-insights.md`                                |
-| "How do I investigate X?"                        | `references/investigation-playbook.md`                         |
-| **Refreshing the skill's reference data** from fresh repo state | `references/update-guide.md`                     |
+PHP: missing `esc_html`/`esc_attr`/`esc_url`/`wp_kses_post` on output;
+raw `$_POST`/`$_GET` without `sanitize_*`; missing `wp_verify_nonce` /
+`check_ajax_referer` on AJAX; missing `current_user_can` on privileged ops;
+raw `$wpdb` without `->prepare()`; hardcoded strings without `__()`.
 
-All references live at `~/.claude/skills/wp-eb-dev/references/`.
+JS: `setAttributes` without nullish-coalescing on undefined nested attrs;
+new `save()` output without a `deprecated` entry → "unexpected content"
+errors; pro features in free without `ESSENTIAL_BLOCKS_IS_PRO_ACTIVE` gate;
+submodule pointer change without matching free release branch.
 
-**Cross-repo questions** — when a question spans free, pro, and controls
-(e.g., "who extends this block?", "where is this filter listened?"), read
-the relevant free reference first, then `pro-architecture.md`, then
-`controls-deep-dive.md` as needed. Trace with grep across all three repos.
+Flag in your response — don't fix unless asked.
 
-### Step 4 — Answer in the requested mode
+## Hotspots (highest-risk files to touch)
 
-Ground every claim in a concrete `path/file.php:LINE` citation. If you can't
-cite it, either grep for it first or say "I'm not sure — let me check."
+Free: `Plugin.php` 232 commits · `essential-blocks.php` 230 · `Admin.php` 178 ·
+`Scripts.php` 146 · `blocks.php` 132 · `Form.php` 51 · `StyleHandler.php` 42 ·
+`Block.php` 40. Volatile blocks: form, button, slider, accordion, post-grid,
+image-gallery, lottie, timeline.
 
-## Core Conventions (know these without looking them up)
+Pro: `essential-blocks-pro.php` 86 · `Scripts.php` 44 · `FormBlockHandler.php`
+41 · `HandleTagsResult.php` 33. Hot block: mega-menu.
 
-These come up constantly — memorize them.
+Controls: `backend.scss` 116 · `index.js` 95 · `custom-query/index.js` 38.
 
-**Block naming:**
-- JS block slug: kebab-case (`post-grid`, `advanced-heading`)
-- PHP class: PascalCase (`PostGrid`, `AdvancedHeading`) at `includes/Blocks/<Name>.php`
-- WP block name: `essential-blocks/<kebab>` (e.g., `essential-blocks/post-grid`)
-- Asset handle: `essential-blocks-<name>-frontend` (e.g., `essential-blocks-post-grid-frontend`)
-- Attribute names: camelCase (`columnNumber`, `queryData`, `showThumbnail`)
-- Option keys: snake_case, prefix `eb_` (`eb_settings`)
-- Hook names: snake_case, prefix `eb_` (`eb_post_grid_query_results`)
+Use these for risk assessment in plans/reviews. Full data in
+`commit-insights.md`.
 
-**Block types:**
-- **Dynamic** — `save: () => null` in JS, `render_callback()` in PHP, template in `views/`
-- **Static** — Custom `save()` returning JSX in JS, no render_callback
+## Ask, don't guess
 
-**Attribute storage:**
-- Stored in post content as block comment (standard Gutenberg)
-- Some blocks also persist to post meta key `_eb_attr`
-
-**Singleton pattern:**
-- Almost every PHP class uses `EssentialBlocks\Traits\HasSingletone` — call
-  `ClassName::get_instance()`, never `new ClassName()`
-
-**Pro detection:**
-- `defined('ESSENTIAL_BLOCKS_IS_PRO_ACTIVE') && ESSENTIAL_BLOCKS_IS_PRO_ACTIVE`
-- Pro blocks filtered at frontend via `Plugin::filter_pro_blocks_frontend()`
-
-**Responsive values:**
-- Stored as flat keys with device suffix, not nested objects: e.g.,
-  `columnNumberDesktop`, `columnNumberTablet`, `columnNumberMobile`
-- Helpers in `src/controls/src/helpers/responsiveRangeHelpers.js`
-
-**Styling three-tier system:**
-1. Webpack-compiled `style.scss` → one big combined frontend CSS file
-2. Dynamic inline CSS generated from attributes (via `includes/Modules/StyleHandler.php`)
-3. Optional static CSS cache in `wp-content/uploads/essential-blocks/`
-
-## Red-flag Checklist (always scan for these)
-
-When reading block PHP or any code that touches request data:
-
-- [ ] Unescaped output: missing `esc_html`, `esc_attr`, `esc_url`, `wp_kses_post`
-- [ ] Missing sanitization: raw `$_POST`, `$_GET` without `sanitize_text_field` / `sanitize_key`
-- [ ] Missing nonce: AJAX handlers or form submissions without `check_ajax_referer` / `wp_verify_nonce`
-- [ ] Missing capability check: privileged actions without `current_user_can('manage_options')`
-- [ ] Raw SQL: `$wpdb->get_results()` / `query()` without `->prepare()`
-- [ ] Hardcoded strings in PHP without `__()` / `_e()` (breaks i18n)
-- [ ] `filter_pro_blocks_frontend()` bypass: dynamic block render_callback not checking pro gate
-- [ ] Submodule pointer change without matching free-plugin branch update
-
-Flag any you find in investigate/plan output. Don't "fix" them unless asked.
-
-## Quick Numbers (as of 2026-04)
-
-**Free plugin** (`origin/master`):
-- 7,992+ commits from 2020-04-05 to 2026-04-02
-- 60+ blocks in `includes/blocks.php`
-- 166+ version tags (latest: `v6.0.7`)
-- 22 contributors; top 4 account for ~85% of commits
-
-**Pro plugin** (`origin/main`):
-- 2,395+ commits from 2023-02-27 to 2026-04-02
-- 22 standalone blocks + 7 block-extends
-- 45+ version tags (latest: `2.7.9` / `v2.7.8`)
-- ~10 contributors; Sumaiya + Jamil + Monir dominate
-
-**Controls submodule** (`origin/master`, separate repo `EssentialBlocks/controls`):
-- 1,427+ commits from 2021-06-07 to 2026-04-02
-- 37 individual controls in `src/controls/src/controls/`
-- 0 version tags — branch-based releases only (`release-6.0.7`, etc.)
-- 15 contributors; top 3 (Jamil, Monir, Hanzala) ~83% of commits
-
-**Hotspots — free:** `includes/Plugin.php` (232), `essential-blocks.php` (230),
-`includes/Admin/Admin.php` (178), `includes/Core/Scripts.php` (146),
-`includes/blocks.php` (132), `includes/Core/Block.php` (40)
-
-**Hotspots — pro:** `essential-blocks-pro.php` (86),
-`includes/Core/Scripts.php` (44), `includes/Utils/FormBlockHandler.php` (41),
-`includes/Core/DynamicTags/HandleTagsResult.php` (33)
-
-**Hotspots — controls:** `src/backend.scss` (116), `src/index.js` (95),
-`src/group-controls/index.js` (75), `src/helpers/index.js` (62),
-`src/controls/custom-query/index.js` (38)
-
-**Most-touched block code in free:** form (218), button (217), slider (180),
-accordion (170), post-grid (138), infobox (106)
-
-Use these as a sanity check when someone asks "what areas are risky to touch".
-
-## Ask, Don't Guess
-
-If any of these are unclear, **stop and ask**:
-
-- Which repo path to use (free vs pro, which clone)
-- Which branch to analyze (current HEAD vs a specific branch/PR)
-- Whether to include pro in the analysis
-- Whether to trace impact across blocks or focus on one
-- Whether the user wants a fix patch or just a root-cause explanation
-
+Stop and ask if unclear: which repo path · which branch · pro in scope?
+· trace impact or focus on one block · fix patch or root-cause only.
 A clarifying question is cheaper than a wrong answer.

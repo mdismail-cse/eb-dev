@@ -1,8 +1,13 @@
 # Essential Blocks — Git Workflow, Branching & Release Process
 
+> **TL;DR:** Branch naming (`{5-digit-id}-{name}`), PR conventions,
+> release cadence, contributor ranks, ownership-by-area. Read when
+> mapping issue IDs to branches, finding who owns code, or
+> understanding release flow. For per-release changelogs, see
+> `release-history.md`. For commit hotspots, see `commit-insights.md`.
+
 Conventions extracted from 7,992 commits on `origin/master`
-(2020-04-05 → 2026-04-02). Use this when navigating PRs, matching issue
-IDs to branches, or understanding who owns what.
+(2020-04-05 → 2026-04-02).
 
 ## Branch naming
 

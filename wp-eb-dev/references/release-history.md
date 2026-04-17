@@ -1,8 +1,9 @@
 # Essential Blocks — Release History & Changelogs
 
-Concrete per-release changes extracted from `git log` between tags.
-Use this to answer "what changed in version X", "when was Y introduced",
-"which release broke Z", and "what's the upgrade path from A to B".
+> **TL;DR:** Per-release substantive changes for v5.9.0→v6.0.7
+> (10 most recent free releases) + free↔pro version alignment table.
+> Read for "what changed in vX", "which release broke Y", or
+> upgrade-path planning.
 
 Merge commits and version-bump noise are excluded — only substantive
 code changes are listed.

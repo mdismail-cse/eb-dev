@@ -1,11 +1,12 @@
 # Essential Blocks — Investigation & Planning Playbook
 
-Recipes for common tasks. When a user hands you a bug report, an issue ID,
-or a feature request, start with the matching recipe. Each recipe ends in
-a deliverable you give back to the user — no code changes unless asked.
+> **TL;DR:** 9 step-by-step recipes — investigate bug, plan new block,
+> trace a hook, reproduce from issue ID, "where is X", produce a patch,
+> sanity-check a PR, estimate effort. Each ends with a deliverable.
+> All read-only. Read when you need a procedure, not facts.
 
-All recipes are **read-only**. They use `Read`, `Grep`, `Glob`, and
-`git log/diff/blame/show`. They never modify the repo.
+When a user hands you a bug report, an issue ID, or a feature request,
+start with the matching recipe.
 
 ## Recipe 1 — Investigate a bug report
 

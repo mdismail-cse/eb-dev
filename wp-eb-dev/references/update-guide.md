@@ -1,8 +1,12 @@
 # Update Guide — Refreshing wp-eb-dev Skill Resources
 
-This skill's reference files are snapshots of the Essential Blocks
-ecosystem at the time they were written. The repos move fast (one release
-every ~2 weeks on the free plugin), so the snapshots eventually drift.
+> **TL;DR:** How to refresh the skill's reference data from fresh repos.
+> Read ONLY when the user asks to update/refresh/sync the skill. Not
+> needed for normal investigation/planning work. Self-contained
+> 13-step procedure.
+
+The repos move fast (one release every ~2 weeks on the free plugin), so
+the snapshots eventually drift.
 
 Use this guide when you want to refresh the skill with fresh data from
 `origin/master` (free + controls) and `origin/main` (pro).

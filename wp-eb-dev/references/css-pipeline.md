@@ -1,8 +1,13 @@
 # Essential Blocks — CSS Pipeline & StyleHandler
 
+> **TL;DR:** Full attribute → CSS file → frontend pipeline trace.
+> Read for ANY "CSS not applying", "stale styles", "block validation
+> error", or `deprecated` migration question. Includes the 4-stage
+> flow with file:line citations and 46-block deprecated migration
+> pattern at the bottom.
+
 How `setAttributes({bgColor: '#f00'})` in the editor becomes a CSS rule
-on the frontend. This is the single most important flow for debugging
-"CSS not applying", "styles missing on frontend", or "stale styles".
+on the frontend.
 
 ## Pipeline overview (4 stages)
 

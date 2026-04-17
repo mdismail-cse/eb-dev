@@ -1,5 +1,10 @@
 # Essential Blocks — Blocks Inventory
 
+> **TL;DR:** Lookup table for all FREE blocks: slug, PHP class, JS dir,
+> static-vs-dynamic, commit count. Read when you need to find a block by
+> name, identify its files, or pick a reference block to mirror. For pro
+> blocks, see `pro-architecture.md` §5.
+
 All 60+ blocks with slug, PHP class, JS path, and context. Blocks are
 registered in `includes/blocks.php`. Inner/child blocks (form fields, tab,
 accordion-item, column, price) are not standalone — they register as child

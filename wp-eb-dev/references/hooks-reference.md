@@ -1,12 +1,13 @@
 # Essential Blocks — Hooks & Filters Reference
 
-Quick lookup for every custom action/filter exposed by the Essential Blocks
-free plugin. Use these when planning pro extensions, investigating why code
-runs (or doesn't), or tracing how a value flows through the plugin.
+> **TL;DR:** All custom `do_action` / `apply_filters` exposed by free,
+> with file:line citations. Read when extending EB via hooks, tracing
+> where a value flows, or finding extension points. For pro-only hooks,
+> see `pro-architecture.md` §10.
 
-Line numbers move — these are accurate as of `origin/master` ~v6.0.7
-(fc51997e8, 2026-04-02). Use `grep -rn "do_action\|apply_filters" includes/`
-to confirm current positions.
+Quick lookup for every custom action/filter. Line numbers verified
+against `origin/master` @ fc51997e8 (2026-04-02). Always re-grep before
+patching — line numbers drift between releases.
 
 ## Action hooks (do_action)
 

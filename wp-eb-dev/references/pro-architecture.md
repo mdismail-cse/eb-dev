@@ -1,5 +1,11 @@
 # Essential Blocks Pro — Architecture Reference
 
+> **TL;DR:** Pro-specific everything — bootstrap (boots off
+> `essential_blocks::init`), 22 standalone blocks, 7 block-extends,
+> dynamic-tags system, EDD licensing, pro-only hooks, free↔pro version
+> alignment. Read for any pro-related question. Default branch is
+> `main` (NOT master).
+
 Pro plugin repo: `https://github.com/WPDevelopers/essential-blocks-pro`
 Bootstrap file: `essential-blocks-pro.php`
 Namespace root: `EssentialBlocks\Pro\`

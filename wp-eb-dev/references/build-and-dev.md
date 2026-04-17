@@ -1,8 +1,13 @@
 # Essential Blocks — Build & Dev Reference
 
+> **TL;DR:** Build pipeline — npm/pnpm scripts, webpack entries,
+> dist/ layout, common build failures. Read when diagnosing
+> "build broken", "submodule not linked", "controls not loading",
+> or planning a config change. Skill never runs builds — describes
+> them so the user can.
+
 How the plugin is built, how scripts wire together, and where compiled
-artifacts land. This skill never runs builds itself — this reference
-exists so you can explain, plan, and diagnose build issues.
+artifacts land. This skill never runs builds itself.
 
 ## Tooling
 

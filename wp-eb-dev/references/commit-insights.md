@@ -1,10 +1,13 @@
 # Essential Blocks — Commit History Insights
 
-Data-driven view of 6 years of development. Use this to answer "is this
-area stable or volatile?", "how has X evolved?", "who should I ask about
-Y?", and "are we touching a hot file?".
+> **TL;DR:** Quantitative analysis of 7,992 free commits — file
+> hotspots, top contributors, evolution timeline, monthly heatmap.
+> Read when assessing risk ("is this file volatile?"), tracing
+> evolution ("when did X arrive?"), or estimating effort. For
+> branching/PR conventions, see `git-workflow.md`.
 
-Source: `git log origin/master` as of fc51997e8 (2026-04-02).
+Data-driven view of 6 years of development. Source: `git log origin/master`
+as of fc51997e8 (2026-04-02).
 
 ## Headline numbers
 

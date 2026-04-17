@@ -1,8 +1,11 @@
 # Essential Blocks — Common Bug Patterns
 
-Extracted from ~777 fix commits across 6 years. When investigating a bug,
-check if it matches one of these recurring patterns — the fix is often
-predictable.
+> **TL;DR:** 10 recurring bug categories with symptoms, root causes,
+> and fix patterns. Read at the START of any bug investigation —
+> 2-minute scan can short-circuit hours of digging. Pairs with
+> `investigation-playbook.md` Recipe 1.
+
+Extracted from ~777 fix commits across 6 years.
 
 ## Top bug areas by frequency (from commit messages)
 

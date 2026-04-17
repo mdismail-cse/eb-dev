@@ -1,5 +1,11 @@
 # Essential Blocks Controls — Deep Dive (Standalone Repo)
 
+> **TL;DR:** Controls submodule as a REPO — git history, contributors,
+> branching, release alignment, file hotspots. Read when investigating
+> "why is the submodule pointer out of sync", "who owns this control",
+> or "when was X introduced". For the API surface (which controls exist,
+> how to use them), see `controls-api.md`.
+
 The controls library is **its own standalone git repository**, hosted at
 `git@github.com:EssentialBlocks/controls.git` (note the `EssentialBlocks`
 org, not `WPDevelopers`), and mounted as a git submodule inside

@@ -1,8 +1,13 @@
 # Essential Blocks — Architecture Reference
 
-Senior-dev mental model for the WPDevelopers/essential-blocks plugin. Use
-this as the map before diving into any specific area. All paths are relative
-to the free plugin root unless otherwise noted.
+> **TL;DR:** Mental model of the FREE plugin. Read when you need to know
+> where things live, how the bootstrap flows, or which class does what.
+> For pro, see `pro-architecture.md`. For shared controls, see
+> `controls-api.md` + `controls-deep-dive.md`. For "where is X?", check
+> `investigation-playbook.md` Recipe 6 instead.
+
+Senior-dev mental model for the WPDevelopers/essential-blocks plugin. All
+paths are relative to the free plugin root unless otherwise noted.
 
 ## 1. Top-level layout
 
@@ -320,61 +325,28 @@ Quick recall — the 5 most important hooks:
 - ESLint config via `@wordpress/scripts` (`npm run lint:js`)
 - No Playwright/e2e scaffolding in the repo
 
-## 11. Must-know files (top 40)
+## 11. Must-know files (15 essentials)
 
-Bootstrap (5):
-- `essential-blocks.php` — plugin entry
-- `autoload.php` — PSR-4 autoloader
-- `includes/Plugin.php` — main singleton
-- `includes/Traits/HasSingletone.php` — singleton trait
-- `includes/blocks.php` — block registry
+| File | Why |
+|---|---|
+| `essential-blocks.php` | Plugin entry — 30 lines, just bootstraps singleton |
+| `autoload.php` | PSR-4 autoloader |
+| `includes/Plugin.php` | Main singleton, defines all constants, orchestrates services |
+| `includes/blocks.php` | Block registry — full manifest array |
+| `includes/Core/Block.php` | Abstract base for every block |
+| `includes/Core/Blocks.php` | Block loader, applies enable/disable settings |
+| `includes/Blocks/PostBlock.php` | Base for query-driven blocks (grid, carousel) |
+| `includes/Blocks/PostGrid.php` | Biggest dynamic example — read this to understand the pattern |
+| `includes/Modules/StyleHandler.php` | Dynamic CSS generation (see `css-pipeline.md`) |
+| `includes/Admin/Admin.php` | Admin menu + AJAX handlers |
+| `includes/Utils/Settings.php` | `eb_settings` option wrapper, fires save/reset hooks |
+| `includes/Utils/QueryHelper.php` | All post queries route through this |
+| `includes/Integrations/Form.php` | Form submission, validation, hooks |
+| `src/controls/src/index.js` | Controls barrel export |
+| `webpack.config.js` | Build entries — 40+ |
 
-Block system (10):
-- `includes/Core/Block.php` — abstract base
-- `includes/Core/Blocks.php` — block loader
-- `includes/Blocks/PostBlock.php` — base for query blocks
-- `includes/Blocks/PostGrid.php` — biggest dynamic example
-- `includes/Blocks/Form.php` — form block PHP
-- `includes/Blocks/AdvancedHeading.php` — simple static example
-- `src/blocks/post-grid/src/index.js`
-- `src/blocks/post-grid/src/edit.js` (87KB)
-- `src/blocks/post-grid/src/frontend.js`
-- `src/blocks/post-grid/block.json`
-
-Assets & build (5):
-- `includes/Utils/Enqueue.php`
-- `includes/Core/Scripts.php`
-- `includes/Modules/StyleHandler.php`
-- `webpack.config.js`
-- `package.json`
-
-REST (5):
-- `includes/API/Server.php`
-- `includes/API/Base.php`
-- `includes/API/PostBlock.php`
-- `includes/API/Product.php`
-- `includes/API/Common.php`
-
-Admin & settings (5):
-- `includes/Admin/Admin.php`
-- `includes/Utils/Settings.php`
-- `src/admin/dashboard/index.js`
-- `includes/Admin/QuickSetup.php`
-- `views/admin.php`
-
-Controls & helpers (5):
-- `src/controls/src/index.js`
-- `src/controls/src/controls/background-control/index.js`
-- `src/controls/src/helpers/` (whole dir)
-- `src/store/index.js`
-- `src/global-styles/index.js`
-
-Integrations & utils (5):
-- `includes/Integrations/Form.php`
-- `includes/Integrations/GlobalStyles.php`
-- `includes/Utils/Helper.php`
-- `includes/Utils/QueryHelper.php`
-- `includes/Core/FontLoader.php`
+For lookup-by-purpose ("where is X defined?"), use
+`investigation-playbook.md` Recipe 6.
 
 ## 12. Conventions & gotchas
 
@@ -427,20 +399,5 @@ Integrations & utils (5):
 
 ## Quick cross-references
 
-| "Where is…"                                  | Answer                                                           |
-|-----------------------------------------------|------------------------------------------------------------------|
-| Block X's PHP class                          | `includes/Blocks/<PascalCase>.php`                               |
-| Block X's JS source                           | `src/blocks/<kebab>/src/`                                        |
-| Block X's server-render template              | `views/<kebab>.php` or `views/<kebab>/`                          |
-| Block X's frontend script                     | `src/blocks/<kebab>/src/frontend.js` → `dist/blocks/<kebab>/frontend.js` |
-| Controls exports                              | `src/controls/src/index.js`                                      |
-| A specific control                            | `src/controls/src/controls/<kebab-control>/`                     |
-| Block registry list                           | `includes/blocks.php`                                            |
-| Dynamic CSS generation                        | `includes/Modules/StyleHandler.php`                              |
-| Asset enqueue logic                           | `includes/Utils/Enqueue.php` + `includes/Core/Block.php::load_frontend_*` |
-| REST endpoints                                | `includes/API/<Name>.php`                                        |
-| Admin AJAX handlers                           | `includes/Admin/Admin.php`                                       |
-| Settings option                               | `wp_options` row `eb_settings`                                   |
-| Block enable/disable                          | `eb_settings['blocks'][<slug>]` (visibility)                     |
-| Patterns                                      | `patterns/*.json` registered by `Core/BlocksPatterns.php`        |
-| Custom page templates                         | `templates/*.php` registered by `Core/PageTemplates.php`         |
+→ See `investigation-playbook.md` Recipe 6 — "Where is X defined?"
+(deduplicated; one source of truth for path lookups).

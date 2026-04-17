@@ -1,5 +1,11 @@
 # Essential Blocks Controls — Reference
 
+> **TL;DR:** API surface of the controls submodule — list of 37 controls,
+> exports, helpers, hooks, HOCs, and how to add a new one. Read when you
+> need to find a control, understand the responsive value pattern, or
+> wire a control into a block. For repo history (who/when/branches), see
+> `controls-deep-dive.md`.
+
 The `src/controls/` submodule is the shared React control library used by
 both free and pro Essential Blocks. Blocks import from it via the alias
 `@essential-blocks/controls`, which webpack externalizes to `window.EBControls`
