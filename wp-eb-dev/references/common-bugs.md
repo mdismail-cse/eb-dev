@@ -184,7 +184,55 @@ entry's `save()`. The first one whose HTML matches wins.
 selectors in EB's CSS or a `!important` (last resort). Check
 `StyleHandler.php` for theme-specific compatibility code.
 
-### 10. "Dynamic block shows nothing" (~30 instances)
+### Security note: REST `verify_post_permission()` is a no-op
+
+**Verified 2026-04:** `Base::verify_post_permission()` (`includes/API/Base.php:51-55`)
+returns bare `true` — comment says "You can add nonce verification here
+if needed", but no nonce/cap check is implemented. This means:
+
+- All `Base::post()` endpoints are effectively **public** by default
+- Endpoints that need real auth must override `permission_callback`
+  per route (see `Common::roles` for the pattern with `current_user_can('edit_posts')`)
+
+When reviewing a new POST endpoint, flag this: "permission_callback
+defaults to a no-op — explicit caps/nonce check required for any
+privileged action."
+
+### 11. "Empty CSS / `undefined` leaks into rule" — **generator-pair mismatch**
+
+**Symptoms:** Block renders unstyled or with `padding: undefined undefined`.
+Editor preview shows correct styling but frontend doesn't.
+
+**Root cause (single most common):** Mismatch between attribute generator
+and style generator prefix constants.
+
+The pattern: `attributes.js` declares attributes via
+`generate<Feature>Attributes(prefixConstant)`, and `style.js` consumes
+them via `generate<Feature>ControlStyles({ controlName: prefixConstant, ... })`.
+**The prefix string must be byte-identical in both calls.** Typo, rename,
+or removal in one place breaks the pair → empty CSS or `undefined` leak.
+
+Pairs to keep aligned:
+
+| Attributes call                          | Style call                                                    |
+|------------------------------------------|---------------------------------------------------------------|
+| `generateDimensionsAttributes("X")`      | `generateDimensionsControlStyles({controlName:"X",styleFor})` |
+| `generateTypographyAttributes(prefix)`   | `generateTypographyStyles({attributes, prefixConstant:prefix})` |
+| `generateBackgroundAttributes("X")`      | `generateBackgroundControlStyles({attributes, controlName:"X"})` |
+| `generateBorderShadowAttributes("X")`    | `generateBorderShadowStyles({controlName:"X", attributes})`   |
+| `generateResponsiveRangeAttributes("X")` | `generateResponsiveRangeStyles({controlName:"X", property})`  |
+
+**Fix:** Centralize prefixes in `src/blocks/<name>/src/constants.js` (or
+`constants/index.js`), import in both `attributes.js` and `style.js`. The
+project's `block-audit` agent (`<plugin>/.claude/agents/block-audit.md`)
+has Check 6 dedicated to this — invoke it after refactoring controls.
+
+**Where to look:**
+- `src/blocks/<name>/src/attributes.js` — attribute generator calls
+- `src/blocks/<name>/src/style.js` (or `components/style.js`) — style generator calls
+- `src/blocks/<name>/src/constants.js` — prefix definitions
+
+### 12. "Dynamic block shows nothing" (~30 instances)
 
 **Symptoms:** Block appears in editor but renders empty on frontend.
 

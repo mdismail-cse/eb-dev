@@ -204,6 +204,39 @@ And for the template used by a dynamic block render:
 grep -rn "require.*views" "$EB/includes/Blocks/Slider.php"
 ```
 
+## Reference blocks for new work (mirror these)
+
+When planning a new block, mirror the structure of one of these
+canonical exemplars instead of inventing patterns:
+
+| Goal | Mirror this block |
+|---|---|
+| Simple static block | `notice/` |
+| Static + interactive frontend (Loop Builder context) | `button/` |
+| Complex static with nested children | `accordion/` or `pricing-table/` |
+| Dynamic / query-driven | `post-grid/` |
+| Dynamic with frontend AJAX | `post-grid/` (filter, search, load-more) |
+| Form integration | `form/` + child field blocks under `form-*-field/` |
+| Adding `deprecated.js` (simple) | `notice/src/deprecated.js` |
+| Adding `deprecated.js` (complex with `migrate()`) | `accordion/src/deprecated.js` or `popup/src/deprecated.js` |
+
+## File layout — TWO patterns coexist (always check both)
+
+When grep'ing for a block's edit/save/style logic, both layouts exist
+(verified across 66 blocks):
+
+- **Layout B — flat (DOMINANT, ~60 of 66 blocks):**
+  `src/blocks/<name>/src/{edit,save,style,inspector}.js`
+- **Layout A — `components/` subdir (rare, ~few blocks like `button`):**
+  `src/blocks/<name>/src/components/{edit,save,style,inspector}.js`
+
+A "missing file" search may just be looking in the wrong layout. List
+the dir first: `ls src/blocks/<name>/src/`. If you only see
+`components/`, that's Layout A — drill into it.
+
+Likewise, constants may be `src/blocks/<name>/src/constants.js` (flat)
+or `src/blocks/<name>/src/constants/index.js` (subdirectory).
+
 ## Block category taxonomy
 
 From `includes/blocks.php`:

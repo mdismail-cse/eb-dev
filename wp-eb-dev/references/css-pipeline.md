@@ -127,6 +127,30 @@ wp-content/uploads/eb-style/
 **Dependency filter:** `eb_generated_css_frontend_deps` at `:103` — lets
 you add CSS deps before the generated file.
 
+## Theme / page-builder integration
+
+`StyleHandler::__construct()` (`includes/Modules/StyleHandler.php:71-92`)
+hooks into popular theme/page-builder constructs to enqueue per-post EB
+CSS where the rendered post ID isn't the queried object.
+
+| Theme / Plugin   | Hook / Mechanism                                                       | Type   | Line       |
+|------------------|------------------------------------------------------------------------|--------|------------|
+| GeneratePress    | `generate_element_post_id`                                              | filter | `:78`      |
+| Astra Addon      | `wp_enqueue_scripts` → `astra_advanced_hooks_css_generation()` (pri 15) | action | `:92`      |
+| Templately       | `templately_printed_location`                                           | action | `:89`      |
+| Blocksy          | inline plugin-presence check + `ct_content_block` query (NOT a filter) | n/a    | `:158-172` |
+
+**Note (verified):** Blocksy support is NOT a filter hook — it's an
+inline check inside `enqueue_frontend_assets()` for the active plugin
+`blocksy-companion-pro/blocksy-companion.php`, which then queries
+`ct_content_block` posts directly and enqueues their EB CSS files.
+
+When investigating "EB styles missing inside a GP hook / Astra header /
+Blocksy content block / Templately template", grep `StyleHandler.php`
+for the integration name first — the issue is almost always a missing
+CSS file at `uploads/eb-style/eb-style-{integrationPostId}.min.css` or
+the integration not surfacing the right post ID.
+
 ## Cache invalidation
 
 | Event                                     | What happens                                         | Code location                            |
@@ -215,12 +239,52 @@ ebConditionalRegisterBlockType(metadata, {
 6. First match wins — if `migrate()` exists, old attributes are transformed
 7. Block re-renders with migrated attributes
 
+### Common `migrate()` patterns
+
+**Pattern A — Rename an attribute:**
+```javascript
+migrate: (oldAttributes) => ({
+    ...oldAttributes,
+    newAttrName: oldAttributes.oldAttrName,
+})
+```
+
+**Pattern B — Items array → InnerBlocks (returns TUPLE):**
+```javascript
+migrate: (attrs) => [
+    omit(attrs, ["items"]),   // new attributes
+    attrs.items.map(item =>    // new innerBlocks
+        createBlock("essential-blocks/<child>", {...}, [
+            createBlock("core/paragraph", { content: item.text })
+        ])
+    ),
+]
+```
+The tuple-return signature is required when migration also produces inner
+blocks. `lodash.omit` is available globally as `lodash` (no import).
+
+**Pattern C — `block.json` `supports` config changed:**
+The deprecated entry needs its own `supports: { align, anchor }` matching
+the OLD config.
+
 ### Gotchas
 
-- **No `isEligible()` used** — EB relies on schema matching only
+- **No `isEligible()` used** — EB relies on schema matching only.
+- **Order matters** — newest deprecated version goes at INDEX 0. WP iterates
+  the array top-to-bottom; first match wins. Never modify or reorder
+  existing entries.
 - **`blockMeta` not in deprecated schemas** — old blocks may lack it;
-  migration doesn't regenerate CSS (user must re-save)
-- **`omit()` from lodash** — used to exclude new props from old schemas
-- **Order matters** — newest deprecated version first
+  migration doesn't regenerate CSS. User must re-save the post.
+- **`omit()` from lodash** — used to exclude new props from old schemas.
 - **Static blocks only** — dynamic blocks (`save: () => null`) don't need
-  deprecated because their saved HTML is just the block comment
+  deprecated because their saved HTML is just the block comment with the
+  attribute JSON.
+- **Save wrapper migrated from `useBlockProps.save()` → `<BlockProps.Save attributes={attributes}>`**
+  in newer code. Old deprecated entries may still use the legacy wrapper.
+
+### Authoring → defer to plugin's skill
+
+For procedure (snapshot attributes, write the entry, register, verify),
+defer to the plugin's `deprecate-block` skill at
+`<plugin-checkout>/.claude/skills/deprecate-block/SKILL.md`. This skill
+documents the WHAT/WHY; that one documents the HOW.

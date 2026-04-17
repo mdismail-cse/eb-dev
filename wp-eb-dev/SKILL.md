@@ -85,6 +85,32 @@ git -C "$EB" branch -a | grep "<issue_id>"
 
 If repo not found → ask the user, don't guess paths.
 
+## Operation handoff (when user wants to DO, not investigate)
+
+The plugin ships its own task-oriented skills at
+`<plugin-checkout>/.claude/skills/`. They run inside the plugin checkout
+with write access. wp-eb-dev stays read-only. If the user asks to
+perform one of these operations, point them at the matching skill:
+
+| User wants to… | Hand off to (in plugin's `.claude/skills/`) |
+|---|---|
+| Scaffold a new block | `create-block` |
+| Scaffold a new control | `create-control` |
+| Add a control to an existing block | `add-block-control` |
+| Modify an existing block | `update-block` |
+| Add a `deprecated.js` migration | `deprecate-block` |
+| Add a REST endpoint | `add-api-endpoint` |
+| Add WPML translatable attrs | `add-wpml-support` |
+| Update a monthly campaign notice | `update-campaign-notice` |
+| Debug StyleHandler / CSS-not-applying | `debug-style-handler` |
+
+For new-block sanity checks the plugin also ships a `block-audit`
+sub-agent at `.claude/agents/block-audit.md` (7 static checks).
+
+You can still investigate, plan, and explain those operations — just
+don't execute them. Produce a plan, then say "to actually scaffold,
+run the plugin's `create-block` skill."
+
 ## Reference files (load on demand, not pre-emptively)
 
 Each reference starts with a TL;DR — read that first to confirm relevance.
@@ -112,7 +138,36 @@ Cross-repo questions → start with the relevant free reference, then
 
 **Naming:** JS slug kebab → PHP class Pascal → WP name `essential-blocks/<kebab>` →
 asset handle `essential-blocks-<name>-frontend`. Attributes camelCase
-(`columnNumber`). Options/hooks `eb_*` snake_case.
+(`columnNumber`). Options/hooks `eb_*` snake_case. blocks.php registry key
+uses underscores (`my_block`), not dashes. Text domain literal
+`"essential-blocks"` everywhere. JS imports always `@wordpress/element`,
+never raw `react`.
+
+**Block registration (mandatory):** Use `ebConditionalRegisterBlockType`
+from `@essential-blocks/controls`, NEVER raw `registerBlockType`. It
+handles pro/free gating + admin-toggle merge + category registration.
+
+**4 mandatory core attributes** (verified in 5/5 sampled blocks):
+Every block's `attributes.js` includes `resOption` (string, default
+`"Desktop"`), `blockId` (string), `blockRoot` (string, default
+`"essential_block"`), `blockMeta` (object). Removing any breaks the
+responsive system, style isolation, or CSS pipeline.
+
+**Edit/Save wrappers (near-universal — 62/66 blocks):** Edit exports as
+`memo(withBlockContext(defaultAttributes)(Edit))`. Edit JSX wrapped in
+`<BlockProps.Edit>` (133+ instances); Save in
+`<BlockProps.Save attributes={attributes}>` (160+ instances). Outer
+wrapper class `eb-parent-wrapper eb-parent-${blockId} ${classHook}`,
+inner `eb-{name}-wrapper ${blockId}`. CSS selectors target
+`.eb-{name}-wrapper.${blockId}`.
+
+**Block categories enum** (8 values — verified):
+`content`, `creative`, `dynamic`, `form`, `layout`, `marketing`,
+`social`, `woocommerce`.
+
+**File layouts (BOTH coexist — always check both when grep'ing):**
+- **Layout B — flat (DOMINANT, ~60 of 66 blocks):** `src/blocks/<name>/src/{edit,save,style,inspector}.js`
+- **Layout A — components/ subdir (rare, ~few blocks like `button`):** `src/blocks/<name>/src/components/{edit,save,style,inspector}.js`
 
 **Block types:** Dynamic = `save: () => null` + PHP `render_callback()` + `views/<name>.php`.
 Static = JSX `save()`, no render_callback.

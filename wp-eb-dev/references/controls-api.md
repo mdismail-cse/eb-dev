@@ -107,12 +107,14 @@ instead of long flat lists.
 
 ## Hooks (`src/controls/src/hooks/`)
 
-| Hook                 | Purpose                                                                            |
-|----------------------|------------------------------------------------------------------------------------|
-| `useBlockDefaults`   | Returns the default attributes for the current block                               |
-| `useDeviceType`      | Returns the currently selected responsive device (mobile/tablet/desktop)           |
-| `useContextSelector` | Optimized context subscription (avoid re-renders on unrelated state changes)        |
-| `attributes`         | Helper hooks for attribute read/write                                               |
+| Hook                        | File                          | Purpose                                                              |
+|-----------------------------|-------------------------------|----------------------------------------------------------------------|
+| `useBlockAttributes`        | `hooks/attributes.js:10`      | Read attributes via context (no prop-drilling)                        |
+| `useBlockSetAttributes`     | `hooks/attributes.js:16`      | Write attributes via context (wraps `setAttributes`)                  |
+| `useBlockDefaultAttributes` | `hooks/attributes.js:21`      | Read defaults via context                                             |
+| `useBlockDefaults`          | `hooks/useBlockDefaults.js:4` | **Legacy** — coexists with the trio above; prefer the new hooks      |
+| `useDeviceType`             | `hooks/`                      | Returns current responsive device (mobile/tablet/desktop)             |
+| `useContextSelector`        | `hooks/`                      | Optimized context subscription (avoid re-renders on unrelated state)  |
 
 ## Helpers (`src/controls/src/helpers/`)
 
@@ -132,6 +134,7 @@ pipes attribute values through one of these to produce an inline style string.
 | `apiFetch.js`                     | Fetch wrapper for REST API calls                                 |
 | `handlingPreviewBtnsHelpers.js`   | Preview device toggle handlers                                   |
 | `hasVal.js`                       | "Is this value actually set?" check (handles 0, false, '')      |
+| `EBSanitization.js`               | `sanitizeURL(url)` (`:47`) for URL inputs in controls — verified |
 
 ## `ebConditionalRegisterBlockType`
 

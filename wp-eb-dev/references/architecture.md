@@ -134,11 +134,130 @@ from the pro plugin — they're just autoloaded under a pro namespace.
 
 ### REST API
 
-- Route base: `essential-blocks/v1/`
-- Endpoints grouped in `includes/API/` (PostBlock, Product, Common, …)
-- Permission callbacks default to `__return_true` for GET; POST typically
-  verifies a nonce
-- Always check `includes/API/Base.php` for the common wrappers
+**Namespace:** `essential-blocks/v1` — hardcoded in `Base::register_endpoint()`
+(`includes/API/Base.php:18`). Endpoint classes do NOT pass it; they only pass
+the route slug.
+
+**Base helpers** (`includes/API/Base.php:21-44`):
+
+| Helper | HTTP | Default permission |
+|---|---|---|
+| `Base::get($endpoint, $args)`  | `WP_REST_Server::READABLE`  | `__return_true` (public) |
+| `Base::post($endpoint, $args)` | `WP_REST_Server::CREATABLE` | `[$this, 'verify_post_permission']` |
+
+**Caveat:** `verify_post_permission()` (`Base.php:51-55`) currently returns
+bare `true` — the comment notes "You can add nonce verification here if
+needed." Treat POST as effectively public unless the route overrides
+`permission_callback` (see `Common`).
+
+**Route registration** (`includes/API/Server.php:14-29`):
+
+```php
+public function routes() {
+    return array(
+        'product'     => Product::get_instance(),
+        'post-blocks' => PostBlock::get_instance(),
+        'common'      => Common::get_instance(),
+    );
+}
+```
+
+The array key is a descriptive label — NOT the URL. The URL comes from
+each endpoint's `register()` call (e.g., `/queries`, `/roles`).
+
+**Endpoint class skeleton** (`includes/API/Foo.php`):
+
+```php
+class Foo extends Base {
+    use HasSingletone;        // singleton (sic, intentional misspelling)
+    public function register() {
+        $this->get('items',  ['callback' => [$this, 'get_items']]);
+        $this->post('items', ['callback' => [$this, 'create_item']]);
+    }
+}
+```
+Then add `'foo' => Foo::get_instance()` to `Server::routes()`.
+
+**Response patterns:**
+- Success: `rest_ensure_response($payload)`
+- Error: `new WP_Error('eb_invalid_request', $msg, ['status' => 400])` —
+  prefix codes with `eb_*`
+- Pagination: `$response->set_headers(['x-wp-total' => $count])`
+  (see `PostBlock::get_posts()` `includes/API/PostBlock.php:158-163`)
+- Frontend reading paginated headers must pass `parse: false` to `apiFetch`
+
+**Frontend consumer setup:** outside wp-admin, REST root URL is not
+auto-injected. Add the middleware before any `apiFetch()` call:
+
+```js
+apiFetch.use(apiFetch.createRootURLMiddleware(EssentialBlocksLocalize.rest_rootURL));
+apiFetch({path: '/essential-blocks/v1/queries', method: 'POST', data}).then(...);
+```
+
+**Reference endpoints:**
+
+| File | Pattern |
+|---|---|
+| `includes/API/PostBlock.php`  | Simple — registers same path for both GET (BC) and POST (firewall-friendly). Both call one handler that branches on `$request->get_method()` |
+| `includes/API/Common.php`     | Custom permission — overrides default with `current_user_can('edit_posts')` for `roles` endpoint |
+| `includes/API/Product.php`    | Complex — Woo + `QueryHelper` + multiple endpoints |
+
+**Firewall note:** 7G/8G WAFs strip long querystrings → 403. For complex
+JSON payloads (queryData, attributes), prefer POST. PostBlock registers
+both verbs on `queries` for backward compatibility.
+
+### WPML configuration
+
+**Location:** `wpml-config.xml` at plugin root. WPML auto-discovers it;
+no PHP wiring needed.
+
+**Per-block entry shape** (verified against actual `wpml-config.xml`):
+
+```xml
+<gutenberg-block type="essential-blocks/<name>" translate="1">
+    <key name="simpleTextAttr" />              <!-- plain text attr -->
+    <key name="urlAttr" type="link" />         <!-- URL — kept as-is, not translated -->
+    <key name="arrayAttr">                     <!-- array of objects -->
+        <key name="*">                         <!-- wildcard = each item -->
+            <key name="text" />                <!-- field on each item -->
+        </key>
+    </key>
+    <xpath label="...">//*[@class="eb-foo"]</xpath>  <!-- HTML inside save() output -->
+</gutenberg-block>
+```
+
+Wrappers that should NOT translate use `translate="0"`:
+```xml
+<gutenberg-block type="essential-blocks/row" translate="0" />
+<gutenberg-block type="essential-blocks/column" translate="0" />
+<gutenberg-block type="essential-blocks/wrapper" translate="0" />
+```
+
+**Add `<key>` entries for:**
+- Plain text strings (button labels, prefixes, titles)
+- URLs (with `type="link"` so WPML treats them as links, not translatable text)
+- RichText attrs (becomes editable in WPML translation editor)
+- Array items containing text (use `<key name="*">` wildcard then nest fields)
+
+**Do NOT add entries for:**
+- `blockId`, `blockRoot`, `blockMeta` — internal IDs/CSS, never translatable
+- `generate*Attributes` outputs (e.g., `bgGenerateCss`) — derived CSS strings
+- Booleans, numbers, colors, alignment, layout, dimensions, typography
+- Anything output by `helpers/` CSS generators
+
+**`<xpath>` fallback:** for static blocks where translatable text lives in
+saved markup (not an attribute), add `<xpath>` selectors targeting the
+rendered HTML. See `accordion-item`, `advanced-heading` in the file for
+examples — both pair `<key>` entries with `<xpath>` for legacy posts.
+
+**Verification checklist:**
+- `translate="1"` on every block with translatable content
+- Block `type` matches `block.json` `name` exactly (`essential-blocks/<slug>`)
+- `<key name="...">` matches `attributes.js` attr name (camelCase, exact)
+- Re-save a translated post after edits — WPML re-parses on save
+
+**For the authoring procedure** (which attrs to add, how to test in WPML):
+defer to plugin's `add-wpml-support` skill. Don't duplicate procedure here.
 
 ## 3. JavaScript / block architecture
 
@@ -298,6 +417,7 @@ Aliases: `@essential-blocks/controls` → externalized to `window.EBControls`.
   - `wp_ajax_eb_save_quick_toolbar_blocks` — quick-toolbar config
   - `wp_ajax_hide_pattern_library` — pattern library dismiss
   - `wp_ajax_get_eb_admin_templates` — Templately integration
+  - `wp_ajax_eb_regenerate_assets` — manual regen of frontend CSS files (`includes/Integrations/AssetGeneration.php:11`)
 - Onboarding wizard: `includes/Admin/QuickSetup.php`
 - Insights (opt-in anonymous tracking): `includes/Dependencies/Insights.php`
 - Notice management via external dep `PriyoMukul\WPNotice`

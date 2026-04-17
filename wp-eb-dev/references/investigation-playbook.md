@@ -220,6 +220,50 @@ Deliverable:
 7. Pro deactivated: block (or its pro parts) degrade gracefully
 ```
 
+## Recipe 2.5 — Modify an existing block
+
+**Inputs:** block name + change description.
+
+### Step 1. Classify the change shape
+
+Different change types require different files. Use this matrix:
+
+| Change shape | Files to touch | `deprecated.js` needed? |
+|---|---|---|
+| Editor-only bug (inspector/UX) | `edit.js` (or `components/edit.js`) | No |
+| Save markup change (HTML/wrapper/class) | `save.js` + `deprecated.js` | **YES** |
+| New attribute added | `attributes.js` + `edit.js` + `style.js` | Only if `save()` output changes |
+| Attribute renamed/removed | `attributes.js` + `edit.js` + `save.js` + `deprecated.js` with `migrate()` | **YES** |
+| New control in inspector | `attributes.js` + `edit.js` (4 files if new generator pair: + `style.js` + `constants.js`) | No |
+| CSS-only fix in style.js | `style.js` (or `components/style.js`) | No |
+| Frontend JS bug | `frontend.js` | No |
+| PHP render_callback fix | `includes/Blocks/<Pascal>.php` | No |
+| Free → Pro feature gate | `includes/Blocks/<Pascal>.php` + check `ESSENTIAL_BLOCKS_IS_PRO_ACTIVE` | No |
+
+### Step 2. Read history before touching
+
+```bash
+EB="<free path>"
+# Recent activity in this block:
+git -C "$EB" log --since='6 months ago' --oneline -- src/blocks/<name>/ includes/Blocks/<Pascal>.php
+
+# Volatility — has anyone touched this same file recently?
+git -C "$EB" log --oneline -- src/blocks/<name>/src/<file>.js | head -10
+```
+
+### Step 3. If editing `save()` output → ALSO add `deprecated.js`
+
+Without a deprecated entry, every existing instance of this block in the
+wild will throw "block contains unexpected content" on next edit. See
+`css-pipeline.md` "deprecated migration system" for the pattern.
+
+### Step 4. After patching, run the project's static audit
+
+The plugin ships a sub-agent at `<plugin-checkout>/.claude/agents/block-audit.md`
+that checks 7 invariants (file existence, block.json validity, deprecated
+coverage, generator pairs, registration shape). Recommend the user invoke
+it before committing.
+
 ## Recipe 3 — Plan a feature or refactor across blocks
 
 **Inputs:** description of the change ("add dark mode to all heading blocks",
