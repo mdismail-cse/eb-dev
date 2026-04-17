@@ -118,6 +118,8 @@ Each reference starts with a TL;DR — read that first to confirm relevance.
 | User asks about… | Read |
 |---|---|
 | Free architecture, classes, bootstrap | `architecture.md` |
+| **REST API design** (namespace, Base, Server, response patterns) | `architecture.md` §REST |
+| **WPML config** (`wpml-config.xml` grammar, what to translate) | `architecture.md` §WPML |
 | Pro plugin (any aspect) | `pro-architecture.md` |
 | Controls API (37 controls, how to add one) | `controls-api.md` |
 | Controls repo history (who/when/branches) | `controls-deep-dive.md` |

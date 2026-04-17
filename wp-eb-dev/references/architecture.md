@@ -261,7 +261,7 @@ defer to plugin's `add-wpml-support` skill. Don't duplicate procedure here.
 
 ## 3. JavaScript / block architecture
 
-### Typical block directory
+### Typical block directory (Layout B — flat — DOMINANT, ~60/66 blocks)
 
 ```
 src/blocks/<name>/
@@ -270,17 +270,19 @@ src/blocks/<name>/
 │   ├── index.js          # Calls ebConditionalRegisterBlockType(metadata, { edit, save, attributes, ... })
 │   ├── edit.js           # React editor component (biggest file for most blocks)
 │   ├── save.js           # () => null for dynamic, JSX for static
+│   ├── style.js          # Generates CSS strings → <StyleComponent>
 │   ├── attributes.js     # Attributes schema (can be very large — post-grid ~19KB)
 │   ├── frontend.js       # Frontend JS (vanilla) — sliders, AJAX, etc.
-│   ├── style.scss        # Frontend styles
-│   ├── editor.scss       # Editor-only styles
-│   ├── constants/        # Option lists, preset definitions
-│   ├── components/       # Internal React components (reusable within block)
+│   ├── inspector.js      # (some blocks) sidebar panels — others inline this in edit.js
+│   ├── constants.js      # OR constants/ subdir — option lists, preset definitions
 │   └── icon.js / icon.svg
 ```
 
-Some older blocks use `inspector.js` as a separate file for the sidebar
-panels. Newer blocks inline InspectorControls in `edit.js`.
+Layout A (rare, `button` is one of few): edit/save/style live inside a
+`src/components/` subdir instead. Some flat-layout blocks ALSO have a
+`src/components/` subdir for *nested React sub-components* used by edit.js
+(not the full edit/save layout — different concept). Always `ls src/blocks/<name>/src/`
+before assuming.
 
 ### Block entry point pattern
 
